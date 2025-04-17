@@ -1,1 +1,6 @@
+# Ignore build output
 /bin
+/obj
+
+# Ignore appsettings.json to prevent committing sensitive information
+appsettings.json
