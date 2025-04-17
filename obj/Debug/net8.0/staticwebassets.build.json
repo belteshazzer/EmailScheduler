@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "VmC+gTiPrcB97/0KqTYJXBjdRAYi6y5185GEUbdfxhw=",
+  "Source": "EmailScheduler",
+  "BasePath": "_content/EmailScheduler",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

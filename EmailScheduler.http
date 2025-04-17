@@ -1,0 +1,6 @@
+@EmailScheduler_HostAddress = http://localhost:5103
+
+GET {{EmailScheduler_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
