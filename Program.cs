@@ -7,6 +7,7 @@ using EmailScheduler.Context;
 using Microsoft.EntityFrameworkCore;
 using EmailScheduler.Services.EmailService;
 using EmailScheduler.Repositories;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
+builder.Services.AddHangfire(config =>
+{
+    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+builder.Services.AddHangfireServer();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Connection")));
@@ -38,7 +44,7 @@ builder.Services.AddAuthentication(options =>
 .AddCookie(options =>
 {
     options.Cookie.HttpOnly = true;
-    // options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // Use Always in production
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // Use Always in production
     options.Cookie.SameSite = SameSiteMode.Lax; // Adjust based on your needs
 })
 .AddGoogle(googleOptions =>
@@ -55,7 +61,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddScoped<IEmailSenderService, EmailSenderService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 // builder.Services.AddScoped<IBgJobsService, BgJobsService>();
 // Add services to the container.
@@ -79,14 +85,6 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-
 var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
 var logger = loggerFactory.CreateLogger("GlobalExceptionHandler");
 
@@ -104,6 +102,12 @@ app.UseExceptionHandler(errorApp =>
         await context.Response.WriteAsync("An unexpected error occurred.");
     });
 });
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigins"); // Enable CORS before authentication

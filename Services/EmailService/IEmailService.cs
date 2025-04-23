@@ -1,7 +1,10 @@
+using EmailScheduler.Models.Dtos;
+using EmailScheduler.Models.Entities;
+
 namespace EmailScheduler.Services.EmailService
 {
-    public interface IEmailSender
+    public interface IEmailSenderService
     {
-        Task<bool> SendEmail(Guid userId, string fromEmail, string toEmail, string subject, string body);
+        Task<bool> SendScheduledEmail(ScheduledEmailDto emailDto);
     }
 }

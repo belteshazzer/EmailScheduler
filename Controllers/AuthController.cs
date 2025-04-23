@@ -8,7 +8,7 @@ using Microsoft.Identity.Client;
 namespace EmailScheduler.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     public class AuthController : Controller
     {
         private readonly ILogger<AuthController> _logger;
@@ -40,16 +40,27 @@ namespace EmailScheduler.Controllers
         {
             try
             {
-                var state = HttpContext.Request.Query["state"];
-                Console.WriteLine($"State received in callback: {state}");
+                // Log all cookies
+                foreach (var cookie in HttpContext.Request.Cookies)
+                {
+                    _logger.LogInformation($"Cookie: {cookie.Key} = {cookie.Value}");
+                }
 
+                // Log the state parameter
+                var state = HttpContext.Request.Query["state"];
+                _logger.LogInformation($"State received in callback: {state}");
+
+                // Log the correlation cookie
+                var correlationCookie = HttpContext.Request.Cookies.Keys
+                    .FirstOrDefault(k => k.StartsWith(".AspNetCore.Correlation."));
+                _logger.LogInformation($"Correlation cookie: {correlationCookie}");
 
                 // Authenticate the user
                 var authenticateResult = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 if (!authenticateResult.Succeeded)
                 {
                     var error = authenticateResult.Failure?.Message ?? "Unknown error";
-                    Console.WriteLine($"Authentication failed: {error}");
+                    _logger.LogError($"Authentication failed: {error}");
                     return BadRequest(new { Error = $"Google authentication failed: {error}" });
                 }
 
@@ -59,7 +70,7 @@ namespace EmailScheduler.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception: {ex.Message}");
+                _logger.LogError(ex, $"Exception occurred in GoogleCallback: {ex.Message}");
                 return BadRequest(new { Error = ex.Message });
             }
         }

@@ -177,3 +177,4 @@ C:\Users\CBE\Projects\personal\EmailScheduler\obj\Debug\net8.0\refint\EmailSched
 C:\Users\CBE\Projects\personal\EmailScheduler\obj\Debug\net8.0\EmailScheduler.pdb
 C:\Users\CBE\Projects\personal\EmailScheduler\obj\Debug\net8.0\EmailScheduler.genruntimeconfig.cache
 C:\Users\CBE\Projects\personal\EmailScheduler\obj\Debug\net8.0\ref\EmailScheduler.dll
+C:\Users\CBE\Projects\personal\EmailScheduler\obj\Debug\net8.0\EmailScheduler.sourcelink.json

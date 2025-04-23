@@ -1,27 +1,33 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Mail;
+using AutoMapper;
+using EmailScheduler.Models.Dtos;
 using EmailScheduler.Models.Entities;
 using EmailScheduler.Repositories;
 using Newtonsoft.Json;
 
 namespace EmailScheduler.Services.EmailService
 {
-    public class EmailSender : IEmailSender
+    public class EmailSenderService : IEmailSenderService
     {
         private readonly IGenericRepository<EmailSetting> _emailSettingRepository;
+        private readonly IMapper _mapper;
 
-        public EmailSender(IGenericRepository<EmailSetting> emailSettingRepository)
+        public EmailSenderService(IGenericRepository<EmailSetting> emailSettingRepository, IMapper mapper)
         {
             _emailSettingRepository = emailSettingRepository;
+            _mapper = mapper;
         }
 
-        public async Task<bool> SendEmail(Guid userId, string fromEmail, string toEmail, string subject, string body)
+        public async Task<bool> SendScheduledEmail(ScheduledEmailDto emailDto)
         {
             try
             {
+                var email = _mapper.Map<ScheduledEmails>(emailDto);
+                var fromEmail = email.EmailSetting.SmtpUser; // Sender's email address
                 // Retrieve email settings for the user
-                var emailSettings = (await _emailSettingRepository.FindAsync(x => x.UserId == userId && x.SmtpUser == fromEmail)).FirstOrDefault();
+                var emailSettings = (await _emailSettingRepository.FindAsync(x => x.UserId == email.UserId && x.SmtpUser == fromEmail)).FirstOrDefault();
                 if (emailSettings == null)
                 {
                     Console.WriteLine("Email settings not found for the user.");
@@ -61,17 +67,17 @@ namespace EmailScheduler.Services.EmailService
                 var mailMessage = new MailMessage
                 {
                     From = new MailAddress(emailSettings.SmtpUser),
-                    Subject = subject,
-                    Body = body,
+                    Subject = email.Subject,
+                    Body = email.Body,
                     IsBodyHtml = true
                 };
 
-                mailMessage.To.Add(toEmail);
+                mailMessage.To.Add(email.RecipientEmail); // Recipient's email address
 
                 // Log email details
                 Console.WriteLine($"Connecting to SMTP server: {emailSettings.SmtpHost}:{emailSettings.SmtpPort}");
                 Console.WriteLine($"Using SSL: {emailSettings.EnableSsl}");
-                Console.WriteLine($"Sending email from: {emailSettings.SmtpUser} to: {toEmail}");
+                Console.WriteLine($"Sending email from: {emailSettings.SmtpUser} to: {email.RecipientEmail}");
 
                 // Send the email
                 await smtpClient.SendMailAsync(mailMessage);
