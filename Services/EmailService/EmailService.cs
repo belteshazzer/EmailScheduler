@@ -20,7 +20,7 @@ namespace EmailScheduler.Services.EmailService
             _mapper = mapper;
         }
 
-        public async Task<bool> SendScheduledEmail(ScheduledEmailDto emailDto)
+        public async Task<bool> SendScheduledEmail( ScheduledEmailDto emailDto)
         {
             try
             {
@@ -75,9 +75,9 @@ namespace EmailScheduler.Services.EmailService
                 mailMessage.To.Add(email.RecipientEmail); // Recipient's email address
 
                 // Log email details
-                Console.WriteLine($"Connecting to SMTP server: {emailSettings.SmtpHost}:{emailSettings.SmtpPort}");
-                Console.WriteLine($"Using SSL: {emailSettings.EnableSsl}");
-                Console.WriteLine($"Sending email from: {emailSettings.SmtpUser} to: {email.RecipientEmail}");
+                // Console.WriteLine($"Connecting to SMTP server: {emailSettings.SmtpHost}:{emailSettings.SmtpPort}");
+                // Console.WriteLine($"Using SSL: {emailSettings.EnableSsl}");
+                // Console.WriteLine($"Sending email from: {emailSettings.SmtpUser} to: {email.RecipientEmail}");
 
                 // Send the email
                 await smtpClient.SendMailAsync(mailMessage);
@@ -154,6 +154,7 @@ namespace EmailScheduler.Services.EmailService
         {
             try
             {
+                
                 using var httpClient = new HttpClient();
                 var request = new HttpRequestMessage(HttpMethod.Post, "https://oauth2.googleapis.com/token")
                 {
@@ -182,6 +183,28 @@ namespace EmailScheduler.Services.EmailService
                 Console.WriteLine($"Error refreshing access token: {ex.Message}");
                 return null;
             }
+        }
+
+        public async Task<List<string>> ExtractEmailAdressesFromCsv(IFormFile file)
+        {
+            var emailList = new List<string>();
+
+            using (var stream = file.OpenReadStream())
+            using (var reader = new StreamReader(stream))
+            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            {
+                // Assuming the CSV has a column named "Email"
+                var records = csv.GetRecords<dynamic>();
+                foreach (var record in records)
+                {
+                    if (record.Email != null)
+                    {
+                        emailList.Add(record.Email.ToString());
+                    }
+                }
+            }
+
+            return emailList;
         }
     }
 }

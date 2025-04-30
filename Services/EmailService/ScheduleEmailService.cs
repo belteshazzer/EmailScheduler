@@ -24,12 +24,7 @@ namespace EmailScheduler.Services.EmailService
         public async Task<bool> ScheduleEmailAsync(ScheduledEmailDto emailDto)
         {
             var email = _mapper.Map<ScheduledEmails>(emailDto);
-            var user = await _userRepository.GetByIdAsync(email.UserId);
-            if (user == null)
-            {
-                return false; // User not found
-            }
-            return true;
+            await _scheduledEmailRepository.AddAsync(email);
         }
 
         public async Task<bool> UpdateEmailStatusAsync(Guid emailId, bool isSent, bool isRead)

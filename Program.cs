@@ -17,7 +17,7 @@ builder.Logging.AddConsole();
 
 builder.Services.AddHangfire(config =>
 {
-    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"));
+    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("Connection"));
 });
 builder.Services.AddHangfireServer();
 
