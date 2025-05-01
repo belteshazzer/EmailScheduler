@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using EmailScheduler.Services.EmailService;
 using EmailScheduler.Repositories;
 using Hangfire;
+using EmailScheduler.Mapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,18 +21,18 @@ builder.Services.AddHangfire(config =>
     config.UseSqlServerStorage(builder.Configuration.GetConnectionString("Connection"));
 });
 builder.Services.AddHangfireServer();
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Connection")));
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigins", policy =>
+    options.AddPolicy("AllowAllOrigins", policy =>
     {
-        policy.WithOrigins("http://localhost:5103") 
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials(); 
+        policy.AllowAnyOrigin() // Allow requests from any origin
+              .AllowAnyHeader() // Allow all headers
+              .AllowAnyMethod(); // Allow all HTTP methods (GET, POST, etc.)
     });
 });
 
@@ -62,6 +63,8 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IEmailSenderService, EmailSenderService>();
+builder.Services.AddScoped<IScheduleEmailsService, ScheduleEmailsService>();
+builder.Services.AddScoped<GmailService>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 // builder.Services.AddScoped<IBgJobsService, BgJobsService>();
 // Add services to the container.
@@ -110,7 +113,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowSpecificOrigins"); // Enable CORS before authentication
+app.UseCors("AllowAllOrigins"); // Enable CORS before authentication
 app.UseAuthentication(); // Authentication middleware
 app.UseAuthorization(); // Authorization middleware
 app.MapControllers();

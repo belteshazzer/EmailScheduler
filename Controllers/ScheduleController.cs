@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using EmailScheduler.Models.Dtos;
 using EmailScheduler.Services.EmailService;
 using CsvHelper;
+using System.Globalization;
 
 namespace EmailScheduler.Controllers
 {
@@ -12,17 +13,19 @@ namespace EmailScheduler.Controllers
     {
         private readonly IEmailSenderService _emailService;
 
-        public ScheduleController(IEmailSenderService emailService)
+        private readonly IScheduleEmailsService _scheduleEmailService;
+
+        public ScheduleController(IEmailSenderService emailService, IScheduleEmailsService scheduleEmailService)
         {
             _emailService = emailService;
+            _scheduleEmailService = scheduleEmailService;
         }
 
-        [HttpPost("email")]
-        public IActionResult ScheduleEmail(IFormFile file, [FromBody] ScheduledEmailDto emailDto)
+        [HttpPost("schedule-email")]
+        public async Task<IActionResult> ScheduleEmailAsync(IFormFile file, [FromBody] EmailsDto emailDto)
         {
             if (file != null && file.Length > 0)
             {
-
                 // Calculate the delay until the scheduled time
                 var delay = emailDto.ScheduledTime - DateTime.UtcNow;
 
@@ -51,29 +54,35 @@ namespace EmailScheduler.Controllers
                         }
                     }
 
-                    // Send emails to the extracted addresses
-                    foreach (var email in emailList)
-                    {
-                        emailDto.RecipientEmail = email; 
+                    emailDto.RecipientEmails = emailList;
 
-                        BackgroundJob.Schedule(() => _emailService.SendScheduledEmail(emailDto), delay);
-                    }
+                    await _scheduleEmailService.ScheduleEmailAsync(emailDto);
+
+                    BackgroundJob.Schedule(() => _emailService.SendEmail(emailDto), delay);
+
                     return Ok("Emails scheduled successfully.");
                 }
-                else(
-                    // Calculate the delay until the scheduled time
-                    var delay = emailDto.ScheduledTime - DateTime.UtcNow;
+                catch (Exception ex)
+                {
+                    return BadRequest($"Error processing the file: {ex.Message}");
+                }
 
-                    if (delay.TotalSeconds <= 0)
-                    {
-                        return BadRequest("Scheduled time must be in the future.");
-                    }
+            }
+            else{
+                // Calculate the delay until the scheduled time
+                var delay = emailDto.ScheduledTime - DateTime.UtcNow;
 
-                    // Schedule the email to be sent at the specified time
-                    BackgroundJob.Schedule(() => _emailService.SendScheduledEmail(emailDto), delay);
+                if (delay.TotalSeconds <= 0)
+                {
+                    return BadRequest("Scheduled time must be in the future.");
+                }
 
-                    return Ok("Email scheduled successfully.");
-                )
+                await _scheduleEmailService.ScheduleEmailAsync(emailDto);
+
+                // Schedule the email to be sent at the specified time
+                BackgroundJob.Schedule(() => _emailService.SendEmail(emailDto), delay);
+
+                return Ok("Email scheduled successfully.");
             }
         }
     }

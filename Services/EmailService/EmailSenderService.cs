@@ -20,11 +20,11 @@ namespace EmailScheduler.Services.EmailService
             _mapper = mapper;
         }
 
-        public async Task<bool> SendScheduledEmail( ScheduledEmailDto emailDto)
+        public async Task<bool> SendEmail( EmailsDto emailDto)
         {
             try
             {
-                var email = _mapper.Map<ScheduledEmails>(emailDto);
+                var email = _mapper.Map<Emails>(emailDto);
                 var fromEmail = email.EmailSetting.SmtpUser; // Sender's email address
                 // Retrieve email settings for the user
                 var emailSettings = (await _emailSettingRepository.FindAsync(x => x.UserId == email.UserId && x.SmtpUser == fromEmail)).FirstOrDefault();
@@ -72,7 +72,10 @@ namespace EmailScheduler.Services.EmailService
                     IsBodyHtml = true
                 };
 
-                mailMessage.To.Add(email.RecipientEmail); // Recipient's email address
+                foreach (var recipient in emailDto.RecipientEmails)
+                {
+                    mailMessage.To.Add(recipient);
+                }
 
                 // Log email details
                 // Console.WriteLine($"Connecting to SMTP server: {emailSettings.SmtpHost}:{emailSettings.SmtpPort}");
@@ -183,28 +186,6 @@ namespace EmailScheduler.Services.EmailService
                 Console.WriteLine($"Error refreshing access token: {ex.Message}");
                 return null;
             }
-        }
-
-        public async Task<List<string>> ExtractEmailAdressesFromCsv(IFormFile file)
-        {
-            var emailList = new List<string>();
-
-            using (var stream = file.OpenReadStream())
-            using (var reader = new StreamReader(stream))
-            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-            {
-                // Assuming the CSV has a column named "Email"
-                var records = csv.GetRecords<dynamic>();
-                foreach (var record in records)
-                {
-                    if (record.Email != null)
-                    {
-                        emailList.Add(record.Email.ToString());
-                    }
-                }
-            }
-
-            return emailList;
         }
     }
 }

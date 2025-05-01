@@ -1,6 +1,6 @@
 namespace EmailScheduler.Models.Entities
 {
-    public class ScheduledEmails
+    public class Emails
     {
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
@@ -8,7 +8,7 @@ namespace EmailScheduler.Models.Entities
         public required string Subject { get; set; }
         public required string Body { get; set; }
         public required string RecipientEmail { get; set; }
-        public DateTime ScheduledTime { get; set; }
+        public DateTime ScheduledTime { get; set; } 
         public bool IsSent { get; set; } = false;
         public bool IsRead { get; set; } = false;
         // public int AccountId { get; set; }

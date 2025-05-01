@@ -5,6 +5,6 @@ namespace EmailScheduler.Services.EmailService
 {
     public interface IEmailSenderService
     {
-        Task<bool> SendScheduledEmail(ScheduledEmailDto emailDto);
+        Task<bool> SendEmail(EmailsDto emailDto);
     }
 }

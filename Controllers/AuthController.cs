@@ -66,11 +66,14 @@ namespace EmailScheduler.Controllers
 
                 // Process the user information
                 var user = await accountService.SignUpWithGoogleAsync(HttpContext);
-                return Ok(new { Message = "User signed up successfully", User = user });
+                var frontEndUrl = "http://localhost:3000/inbox"; // Replace with your front-end URL
+
+                return Redirect($"{frontEndUrl}/?access_token={authenticateResult.Properties.GetTokenValue("access_token")}&refresh_token={authenticateResult.Properties.GetTokenValue("refresh_token")}");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Exception occurred in GoogleCallback: {ex.Message}");
+
                 return BadRequest(new { Error = ex.Message });
             }
         }

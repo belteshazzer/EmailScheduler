@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EmailScheduler")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9cc33507ebf9d808db7de1ea8439cbf46c44b376")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+16f31145ecc9b3df8f5dd2162fdf00d3528575cc")]
 [assembly: System.Reflection.AssemblyProductAttribute("EmailScheduler")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EmailScheduler")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

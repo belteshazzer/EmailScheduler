@@ -31,14 +31,14 @@ namespace EmailScheduler.Services
             {
                 // Initialize the Gmail API client
                 var credential = GoogleCredential.FromAccessToken(accessToken);
-                var service = new GmailService(new BaseClientService.Initializer
+                var gmailService = new Google.Apis.Gmail.v1.GmailService(new BaseClientService.Initializer
                 {
                     HttpClientInitializer = credential,
                     ApplicationName = "EmailScheduler"
                 });
 
                 // Fetch the list of messages with the specified label
-                var request = service.Users.Messages.List(userId);
+                var request = gmailService.Users.Messages.List(userId);
                 request.LabelIds = labelId;
                 request.MaxResults = 10; // Fetch up to 10 emails
                 var response = await request.ExecuteAsync();
@@ -50,7 +50,7 @@ namespace EmailScheduler.Services
                     foreach (var message in response.Messages)
                     {
                         // Fetch the full message details
-                        var messageRequest = service.Users.Messages.Get(userId, message.Id);
+                        var messageRequest = gmailService.Users.Messages.Get(userId, message.Id);
                         var messageDetails = await messageRequest.ExecuteAsync();
 
                         // Extract the subject from the email headers

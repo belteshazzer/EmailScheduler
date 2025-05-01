@@ -7,63 +7,64 @@ namespace EmailScheduler.Services.EmailService
 {
     public class ScheduleEmailsService : IScheduleEmailsService
     {
-        private readonly IGenericRepository<ScheduledEmails> _scheduledEmailRepository;
+        private readonly IGenericRepository<Emails> _emailRepository;
         private readonly IGenericRepository<Users> _userRepository;
         private readonly IGenericRepository<EmailSetting> _emailSettingRepository;
         private readonly IMapper _mapper;
         
-        public ScheduleEmailsService(IGenericRepository<ScheduledEmails> scheduledEmailRepository,
+        public ScheduleEmailsService(IGenericRepository<Emails> emailRepository,
             IGenericRepository<Users> userRepository, IGenericRepository<EmailSetting> emailSettingRepository, IMapper mapper)
         {
-            _scheduledEmailRepository = scheduledEmailRepository;
+            _emailRepository = emailRepository;
             _userRepository = userRepository;
             _emailSettingRepository = emailSettingRepository;
             _mapper = mapper;
         }
 
-        public async Task<bool> ScheduleEmailAsync(ScheduledEmailDto emailDto)
+        public async Task<bool> ScheduleEmailAsync(EmailsDto emailDto)
         {
-            var email = _mapper.Map<ScheduledEmails>(emailDto);
-            await _scheduledEmailRepository.AddAsync(email);
+            var email = _mapper.Map<Emails>(emailDto);
+            await _emailRepository.AddAsync(email);
+            return true; 
         }
 
         public async Task<bool> UpdateEmailStatusAsync(Guid emailId, bool isSent, bool isRead)
         {
-            var email = await _scheduledEmailRepository.GetByIdAsync(emailId);
+            var email = await _emailRepository.GetByIdAsync(emailId);
             if (email == null)
             {
                 return false; // Email not found
             }
             email.IsSent = isSent;
             email.IsRead = isRead;
-            await _scheduledEmailRepository.UpdateAsync(email);
+            await _emailRepository.UpdateAsync(email);
             return true;
         }
 
-        public async Task<IEnumerable<ScheduledEmails>> GetScheduledEmailsAsync(Guid userId)
+        public async Task<IEnumerable<Emails>> GetScheduledEmailsAsync(Guid userId)
         {
-            var emails = await _scheduledEmailRepository.FindAsync(e => e.UserId == userId);
+            var emails = await _emailRepository.FindAsync(e => e.UserId == userId);
             if (emails == null || !emails.Any())
             {
-                return Enumerable.Empty<ScheduledEmails>(); // No emails found for the user
+                return Enumerable.Empty<Emails>(); // No emails found for the user
             }
             return emails;
         }
 
-        public async Task<ScheduledEmails?> GetScheduledEmailByIdAsync(Guid emailId)
+        public async Task<Emails?> GetScheduledEmailByIdAsync(Guid emailId)
         {
-            var email = await _scheduledEmailRepository.GetByIdAsync(emailId);
+            var email = await _emailRepository.GetByIdAsync(emailId);
             return email; // Returns null if not found
         }
 
         public async Task<bool> DeleteScheduledEmailAsync(Guid emailId)
         {
-            var email = await _scheduledEmailRepository.GetByIdAsync(emailId);
+            var email = await _emailRepository.GetByIdAsync(emailId);
             if (email == null)
             {
                 return false; // Email not found
             }
-            await _scheduledEmailRepository.Delete(email);
+            await _emailRepository.Delete(email);
             return true;
         }
     }

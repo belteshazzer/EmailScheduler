@@ -9,13 +9,13 @@ namespace EmailScheduler.Context
         {
         }
 
-        public DbSet<ScheduledEmails> ScheduledEmails { get; set; }
+        public DbSet<Emails> ScheduledEmails { get; set; }
         public DbSet<Users> Users { get; set; }
         public DbSet<EmailSetting> EmailSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<ScheduledEmails>(e =>
+            modelBuilder.Entity<Emails>(e =>
             {
                 e.HasKey(e => e.Id);
                 e.Property(e => e.Id).HasDefaultValueSql("NEWID()");
